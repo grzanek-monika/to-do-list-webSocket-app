@@ -1,7 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import io from 'socket.io-client';
 
 function App() {
   const [tasks, setTasks] = useState([]);
+  const [socket, setSocket] = useState(null);
+
+  useEffect(() => setSocket(io('localhost:8000')), [])
   return (
     <div className="App">
       <header>
