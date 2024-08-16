@@ -16,7 +16,7 @@ app.use((req, res) => {
 const io = socket(server);
 
 io.on("connection", (socket) => {   
-    socket.to(socket.id).emit("updateData", tasks);
+    io.to(socket.id).emit("updateData", tasks);
     console.log("New user: ", socket.id);
     socket.on("addTask", (task) => {
         console.log("task: ", task);
@@ -25,8 +25,7 @@ io.on("connection", (socket) => {
         socket.broadcast.emit("addTask", task)
     });
     socket.on("removeTask", (id) => {
-        const taskToRemove = tasks.findIndex((task) => task.id === id);
-        tasks.splice(taskToRemove, 1);
+        tasks.filter(task => task.id !== id);
         socket.broadcast.emit("removeTask", id);
     })
     socket.on('disconnect', () => {
