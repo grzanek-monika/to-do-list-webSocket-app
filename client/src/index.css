@@ -39,6 +39,22 @@ p {
   background: #e74c3c;
 }
 
+.btn--blue {
+  background: rgb(71, 202, 219);
+}
+
+.btn--green {
+  background: rgb(85, 233, 85);
+}
+
+.btns {
+  display: flex;
+}
+
+.editForm {
+  display: flex;
+}
+
 .text-input {
   background: none;
   border: none;

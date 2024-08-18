@@ -7,6 +7,9 @@ const App = () => {
   const [tasks, setTasks] = useState([]);
   const [socket, setSocket] = useState(null);
   const [taskName, setTaskName] = useState('');
+  const [taskNameEdit, setTaskNameEdit] = useState(taskName);
+  const [edit, setEdit] = useState('');
+  //const [editTask, setEditTask] = useState(taskName);
 
   useEffect(() => {
     setSocket(io("localhost:8000", { transports: ['websocket'] }));
@@ -16,6 +19,7 @@ const App = () => {
     if(socket) {
       socket.on('updateData', (data) => updateTasks(data));
       socket.on('addTask', (task) => addTask(task));
+      socket.on('editTask', (task) => editTask(task));
       socket.on('removeTask', (id) => removeTask(id));
     }
   }, [socket]);
@@ -44,6 +48,18 @@ const App = () => {
     console.log("tasks:", tasks);
   }
 
+  const editTask = (taskId, taskNameEdit) => {
+    setTasks(tasks.map(task => task.id === taskId ? { id: task.id, name: taskNameEdit } : task));
+    setEdit('');
+    console.log('tasks', tasks);
+  }
+
+  const submitEditTask = (e, taskId, taskNameEdit) => {
+    e.preventDefault();
+    editTask(taskId, taskNameEdit);
+    socket.emit("editTask", {id: taskId, name: taskNameEdit});
+  }
+
   
   return (
     <div className="App">
@@ -54,14 +70,26 @@ const App = () => {
           <ul className="tasks-section__list" id="tasks-list">
             {tasks.map(task => 
             <li className="task" key={task.id}>
-              {task.name}
-              <button className="btn btn--red" onClick={() => removeTask(task.id, true)}>
-                Remove
-              </button>
+              {edit !== task.id && <p>{task.name}</p>}
+              {edit === task.id 
+              && <form onSubmit={e => submitEditTask(e, task.id, taskNameEdit)}>
+                <div className="editForm">
+                  <input className="text-input" placeholder={taskNameEdit} type="text" value={taskNameEdit} onChange={(e) => setTaskNameEdit(e.target.value)} />
+                  <button className="btn btn--green" type="submit">Save</button>
+                </div>
+                </form>}
+              <div className="btns">
+                <button className="btn btn--blue" onClick={() => setEdit(task.id)}>
+                  Edit
+                </button>
+                <button className="btn btn--red" onClick={() => removeTask(task.id, true)}>
+                  Remove
+                </button>
+              </div>
             </li>)}
           </ul>
           <form id="add-task-form" onSubmit={e => submitForm(e)}>
-            <input className="text-input" autocomplete="off" type="text" placeholder="Type your description" value={taskName} onChange={(e) => setTaskName(e.currentTarget.value)} id="task-name" />
+            <input className="text-input" id="task-name" autocomplete="off" type="text" placeholder="Type your description" value={taskName} onChange={(e) => setTaskName(e.target.value)} />
             <button className="btn" type="submit">Add</button>
           </form>
         </section>
